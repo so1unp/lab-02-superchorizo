@@ -65,23 +65,32 @@ void runcmd(struct cmd *cmd)
             exit(-1);
 
         case EXEC:
-            ecmd = (struct execcmd *) cmd;
-            if (ecmd->argv[0] == 0)
-                exit(0);
-            // Eliminar el mensaje de error e implementar
-            // la ejecución de comandos.
-            fprintf(stderr, "EXEC no implementado\n");
-            break;
+        ecmd = (struct execcmd *) cmd;
+        if (ecmd->argv[0] == 0)
+         exit(0);
+        execvp(ecmd->argv[0],ecmd->argv);
+        perror("exec");
+        break;
 
         case REDIR:
-            // Eliminar el mensaje de error e implementar
-            // la redirección de entrada y salida estándar.
-            fprintf(stderr, "REDIR no implementado\n");
-            /* USAR el siguiente código para castear cmd a redircmd
-            rcmd = (struct redircmd *) cmd;
-            runcmd(rcmd->cmd);
-            */
-            break;
+        rcmd = (struct redircmd *) cmd;
+    
+        int fd = open(rcmd->file, rcmd->mode, 0644); 
+        if (fd < 0) {
+            perror("open");
+            exit(1);
+        }
+    
+        if (dup2(fd, rcmd->fd) < 0) {
+            perror("dup2");
+            close(fd);
+            exit(1);
+        }
+    
+        close(fd);
+    
+        runcmd(rcmd->cmd); 
+        break;
 
         case PIPE:
             // Eliminar el mensaje de error e implementar
